@@ -10,7 +10,7 @@ LOGIN() {
   read USER_NAME
 
   #select user info
-  USER_INFO=$($PSQL "select user_id, name, count(game_id) as games_played, coalesce(min(number_of_steps), 0) as best_game from users left join games using(user_id) where name = '$USER_NAME' group by user_id")
+  USER_INFO=$($PSQL "select name, count(game_id) as games_played, min(number_of_steps) as best_game from users left join games using(user_id) where name = '$USER_NAME' group by user_id")
   
   #make step depend on result
   if [[ -z $USER_INFO ]]
@@ -18,11 +18,9 @@ LOGIN() {
     INSERT_NEW_USER_RESULT=$($PSQL "insert into users(name) values('$USER_NAME')")
     echo -e "\nWelcome, $USER_NAME! It looks like this is your first time here."
   else
-    echo $USER_INFO | while IFS="|" read USER_ID NAME GAMES_PLAYED BEST_GAME
+    echo $USER_INFO | while IFS="|" read NAME GAMES_PLAYED BEST_GAME
     do
       echo -e "\nWelcome back, $NAME! You have played $GAMES_PLAYED games, and your best game took $BEST_GAME guesses."
-
-      return $USER_ID
     done
   fi
 }
@@ -57,9 +55,10 @@ GAME() {
 
   echo -e "\nYou guessed it in $COUNTER tries. The secret number was $RANDOM_NUMBER. Nice job!"
   
-  GAME_INSERT_RESULT=$($PSQL "insert into games(user_id, number_of_steps) values($1, $COUNTER)")
+  USER_ID=$($PSQL "select user_id from users where name='$USER_NAME'")
+  
+  GAME_INSERT_RESULT=$($PSQL "insert into games(user_id, number_of_steps) values($USER_ID, $COUNTER)")
 }
-LOGIN
 
-USER_ID="$?"
-GAME $USER_ID
+LOGIN
+GAME

@@ -17,6 +17,11 @@ LOGIN() {
   then
     INSERT_NEW_USER_RESULT=$($PSQL "insert into users(name) values('$USER_NAME')")
     echo -e "\nWelcome, $USER_NAME! It looks like this is your first time here."
+  else
+    echo "$USER_INFO" | while IFS="|" read USER_ID NAME GAMES_PLAYED BEST_GAME
+    do
+      echo -e "Welcome back, $NAME! You have played $GAMES_PLAYED games, and your best game took $BEST_GAME guesses."
+    done
   fi
 }
 

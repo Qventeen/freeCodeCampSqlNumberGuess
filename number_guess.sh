@@ -27,37 +27,37 @@ LOGIN() {
 
 GAME() {
   #get random number
-  RANDOM_NUMBER=$((1 + $RANDOM % 1000))
+  SECRET_NUMBER=$((1 + $RANDOM % 1000))
   
   echo -e "\nGuess the secret number between 1 and 1000:"
   
   GUESS_NUMBER=0
-  COUNTER=0
-  while [[ $GUESS_NUMBER != $RANDOM_NUMBER ]]
+  STEP_COUNTER=0
+  while [[ $GUESS_NUMBER != $SECRET_NUMBER ]]
   do
     read GUESS_NUMBER
     if [[ ! $GUESS_NUMBER =~ ^[0-9]+$ ]]
     then
       echo -e "\nThat is not an integer, guess again:"
     else
-      if [[ $GUESS_NUMBER -gt $RANDOM_NUMBER ]]
+      if [[ $GUESS_NUMBER -gt $SECRET_NUMBER ]]
       then
         echo -e "\nIt's higher than that, guess again:"
-      elif [[ $GUESS_NUMBER -lt $RANDOM_NUMBER ]]
+      elif [[ $GUESS_NUMBER -lt $SECRET_NUMBER ]]
       then
         echo -e "\nIt's lower than that, guess again:"
       fi
     fi
 
-    COUNTER=$(($COUNTER + 1))
+    ((STEP_COUNTER++))
 
   done
 
-  echo -e "\nYou guessed it in $COUNTER tries. The secret number was $RANDOM_NUMBER. Nice job!"
+  echo -e "\nYou guessed it in $STEP_COUNTER tries. The secret number was $SECRET_NUMBER. Nice job!"
   
   USER_ID=$($PSQL "select user_id from users where name='$USER_NAME'")
   
-  GAME_INSERT_RESULT=$($PSQL "insert into games(user_id, number_of_steps) values($USER_ID, $COUNTER)")
+  GAME_INSERT_RESULT=$($PSQL "insert into games(user_id, number_of_steps) values($USER_ID, $STEP_COUNTER)")
 }
 
 LOGIN

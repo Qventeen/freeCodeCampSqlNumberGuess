@@ -23,6 +23,43 @@ LOGIN() {
       echo -e "\nWelcome back, $NAME! You have played $GAMES_PLAYED games, and your best game took $BEST_GAME guesses."
     done
   fi
+
+  return $USER_ID
+}
+
+GAME() {
+  #get random number
+  RANDOM_NUMBER=$((1 + $RANDOM % 10))
+  
+  echo -e "\nGuess the secret number between 1 and 1000:"
+  
+  GUESS_NUMBER=0
+  COUNTER=0
+  while [[ $GUESS_NUMBER != $RANDOM_NUMBER ]]
+  do
+    read GUESS_NUMBER
+    if [[ ! $GUESS_NUMBER =~ ^[0-9]+$ ]]
+    then
+      echo -e "\nThat is not an integer, guess again:"
+    else
+      if [[ $GUESS_NUMBER -gt $RANDOM_NUMBER ]]
+      then
+        echo -e "\nIt's higher than that, guess again:"
+      elif [[ $GUESS_NUMBER -lt $RANDOM_NUMBER ]]
+      then
+        echo -e "\nIt's lower than that, guess again:"
+      fi
+    fi
+
+    COUNTER=$(($COUNTER + 1))
+
+  done
+
+  echo -e "\nYou guessed it in $COUNTER tries. The secret number was $RANDOM_NUMBER. Nice job!"
+  
+  GAME_INSERT_RESULT=$($PSQL "insert into games(user_id, number_of_steps) values($1, $COUNTER)")
 }
 
 LOGIN
+
+GAME $?
